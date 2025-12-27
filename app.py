@@ -87,6 +87,31 @@ def create_snacks():
         "snack":snack.to_dict()
     })
 
+@app.route("/snacks",methods=["GET"])
+@login_required
+def get_tasks():
+    
+    snacks = Snack.query.filter_by(user_id=current_user.id)
+
+    snacks = [snack.to_dict() for snack in snacks]
+
+    return jsonify({"snacks":snacks})
+
+@app.route("/snacks/<int:id>",methods=["GET"])
+@login_required
+def get_task(id):
+    snack = Snack.query.get(id)
+
+    if not snack:
+        return jsonify({"message":"Snack not found"}), 404
+
+    if snack.id != current_user.id:
+        return jsonify({"message":"Unauthorized"}),403
+
+    return jsonify({
+        "snacks":snack.to_dict()
+    })
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
