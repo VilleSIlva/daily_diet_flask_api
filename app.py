@@ -24,7 +24,7 @@ def load_user(user_id):
 
 @app.route('/login',methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
@@ -38,7 +38,7 @@ def login():
 
 @app.route('/register',methods=['POST'])
 def register():
-    data = request.json
+    data = request.get_json()
  
     if not all([data.get('name'), data.get('email'), data.get('password')]):
         return jsonify({'message':'Missing required fields'}),400
@@ -60,4 +60,6 @@ def register():
     }), 200
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
