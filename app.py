@@ -1,5 +1,7 @@
 from flask import Flask
 from database import db
+from model.User import User
+from model.Snack import Snack
 
 app = Flask(__name__)
 
