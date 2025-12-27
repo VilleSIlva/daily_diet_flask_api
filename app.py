@@ -98,7 +98,7 @@ def create_snacks():
 
 @app.route("/snacks",methods=["GET"])
 @login_required
-def get_snacks():
+def get_snack():
     
     snacks = Snack.query.filter_by(user_id=current_user.id)
 
