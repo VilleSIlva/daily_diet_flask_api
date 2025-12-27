@@ -24,6 +24,10 @@ def load_user(user_id):
 @app.route('/login',methods=['POST'])
 def login():
     data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({"message":"Json invalid"}), 400
+
     email = data.get('email')
     password = data.get('password')
 
@@ -40,9 +44,9 @@ def login():
 
 @app.route('/register',methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json(silent=True)
  
-    if not all([data.get('name'), data.get('email'), data.get('password')]):
+    if not all([data,data.get('name'), data.get('email'), data.get('password')]):
         return jsonify({'message':'Missing required fields'}),400
 
     user_exists = User.query.filter_by(email=data['email']).first()
@@ -70,9 +74,9 @@ def logout():
 @app.route("/snacks", methods=["POST"])
 @login_required
 def create_snacks():
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
-    if not all([data.get('name'),data.get('description'), data.get('diet_date')]):
+    if not all([data,data.get('name'),data.get('description'), data.get('diet_date')]):
         return jsonify({"message":"Missing required fields"}), 400
 
     try:
@@ -98,7 +102,7 @@ def create_snacks():
 
 @app.route("/snacks",methods=["GET"])
 @login_required
-def get_snack():
+def get_snacks():
     
     snacks = Snack.query.filter_by(user_id=current_user.id)
 
@@ -122,9 +126,13 @@ def get_snack(id):
     })
 
 @app.route("/snacks/<int:id>", methods=['PUT'])
+@login_required
 def update_snack(id):
-    data = request.get_json()
+    data = request.get_json(silent=True)
     snack = Snack.query.get(id)
+
+    if not data:
+        return jsonify({"messasge":"bad formatted json"}),400
 
     if not snack:
         return jsonify({"message":"Snack not found"}), 404
@@ -150,7 +158,25 @@ def update_snack(id):
 
     return jsonify({
         "message":"Snack update successfully",
-        "snacks": snack.to_dict()
+        "snack": snack.to_dict()
+    })
+
+@app.route("/snacks/<int:id>",methods=['DELETE'])
+@login_required
+def delete_snack(id):
+    snack = Snack.query.get(id)
+
+    if not snack:
+        return jsonify({"message":"Snack not found"}), 404
+
+    if snack.user_id != current_user.id:
+        return jsonify({"message":"Unauthorized"}),403
+    
+    db.session.delete(snack)
+    db.session.commit()
+
+    return jsonify({
+        "message":"Snack remove successfully"
     })
 
 

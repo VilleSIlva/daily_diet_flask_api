@@ -9,7 +9,7 @@ class Snack(db.Model):
     description = db.Column(db.String(200), nullable=False)
     diet_date = db.Column(db.DateTime, nullable=False)
     diet = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def to_dict(self):
