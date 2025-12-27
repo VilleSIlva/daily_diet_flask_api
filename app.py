@@ -1,12 +1,11 @@
-from base64 import decode
-import email
 import bcrypt
 from flask import Flask, jsonify, request
 from database import db
 from model.User import User
 from model.Snack import Snack
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_required, login_user, current_user
 from bcrypt import checkpw, hashpw
+from datetime import datetime
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -58,6 +57,35 @@ def register():
         "message":"User created successful",
         "user": user.to_dict()
     }), 200
+
+@app.route("/snacks", methods=["POSt"])
+@login_required
+def create_snacks():
+    data = request.json
+
+    if not all([data.get('name'),data.get('description'), data.get('diet_date')]):
+        return jsonify({"message":"Missing required fields"}), 400
+
+    try:
+        diet_date = datetime.fromisoformat(data.get('diet_date'))
+    except ValueError:
+        return jsonify({"message":"Invalid date"}), 400
+
+    snack = Snack(
+        name=data['name'],
+        description=data['description'],
+        diet=data.get('diet',False),
+        diet_date= diet_date,
+        user_id=current_user.id
+    )
+
+    db.session.add(snack)
+    db.session.commit()
+
+    return({
+        "message":"Snack created sucessful",
+        "snack":snack.to_dict()
+    })
 
 if __name__ == "__main__":
     with app.app_context():
